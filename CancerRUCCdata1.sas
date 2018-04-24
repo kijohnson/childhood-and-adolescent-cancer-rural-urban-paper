@@ -1,5 +1,20 @@
-filename in1 '/folders/myfolders/mylib/2015SEER3.txt';
+*---
+#PROLOG   ###############################################################
 
+#PROJECT: Rural/urban residence and childhood and adolescent cancer survival in the United States
+#PURPOSE: Association between rural/urban residence and childhood cancer survival 
+#DATA:    SEER 18 Registries
+#AUTHOR:  Arash Delavar
+#CREATED: December 4th, 2017
+#LATEST:  April 24th, 2018
+#NOTES:   This code was written to perform statistical analysis for a study titled
+"Rural/urban residence and childhood and adolescent cancer survival in the United States"
+
+#PROLOG   ###############################################################
+---;
+
+*Import data;
+filename in1 '/folders/myfolders/mylib/2015SEER3.txt';
 proc format;
   value Sexf
     1 = "Male"
@@ -195,12 +210,10 @@ proc format;
     215 = "2015"
     ;
 run;
-
 data use;
   /*NOTE: The data file was created using the Windows format line delimiter.*/
   /*The TERMSTR=CRLF input option for reading the file in UNIX, requires SAS version 9.*/
   infile in1 LRECL = 32000 delimiter = '09'X TERMSTR = CRLF;
-
   input Patient_ID
     Sex
     Year_of_birth
@@ -654,13 +667,13 @@ race familyincome insurance/ rl;
 where Year_of_diagnosis ge 207;
 run;
 
-*Kaplan Meier Curve;
+*Figure 1 - Kaplan Meier Curve;
 proc lifetest;
 time survivalmonths*death(0);
 strata metro03;
 run;
 
-*check proportionality assumptions;
+*Check proportionality assumptions;
 ods graphics on; 
 proc phreg;
 class metro03;
