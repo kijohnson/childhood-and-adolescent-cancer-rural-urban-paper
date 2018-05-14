@@ -6,7 +6,7 @@ Category value labels: 1-leukemias, 2-lymphomas, 3-CNS, 4-neuroblastoma, 5-retin
 6-renal, 7-hepatic, 8-bone, 9-extraosseous sarcoma, 10-reproductive, 11-epithelial, 12-other, 
 13-not classified
 Missing data value label: .
-Summary statistics: 26.64%-leukemias	14.51%-lymphomas, 17.36%-CNS, 4.73%-neuroblastoma, 1.98%-retinoblastoma, 
+Summary statistics: 26.64%-leukemias 14.51%-lymphomas, 17.36%-CNS, 4.73%-neuroblastoma, 1.98%-retinoblastoma, 
 3.82%-renal, 1.31%-hepatic, 5.21%-bone, 7.17%-extraosseous sarcoma, 7.07%-reproductive, 9.77%-epithelial, 
 0.31%-other, 0.13%-not classified
 
@@ -27,16 +27,16 @@ Category value labels: 1-metro ≥1M, 2-metro 250k-1M, 3-metro <250k, 4-non-metr
 Missing data value label: .
 Summary statistics: 61.40%-metro ≥1M, 20.57%-metro 250k-1M, 8.40%-metro <250k, 2.36%-non-metro ≥20k adj to metro,
 1.14%-non-metro ≥20k non-adj to metro, 3.10%-non-metro 2,500-19,999 adj to metro, 
-1.97-non-metro 2,500-19,999 non-adj to metro, 0.48%-non-metro < 2,500 adj to metro, 0.58%-non-metro < 2,500 non-adj to metro
+1.97%-non-metro 2,500-19,999 non-adj to metro, 0.48%-non-metro < 2,500 adj to metro, 0.58%-non-metro < 2,500 non-adj to metro
 
 Variable name: family_income
 Description: Median income values by county categorized into quintiles.
 Category values: 1, 2, 3, 4, 5
-Category value labels: 1-≤$45,830, 2->$45,830 and ≤$48,410, 3->$48,410 and ≤$54,820, 4->$54,820 and≤$65,290,
-5->$65,290
+Category value labels: 1 (≤$45,830), 2 (>$45,830 and ≤$48,410), 3 (>$48,410 and ≤$54,820), 4 (>$54,820 and ≤$65,290),
+5 (>$65,290)
 Missing data value label: .
-Summary statistics: 20.05%-≤$45,830, 21.23%->$45,830 and ≤$48,410, 19.57%->$48,410 and ≤$54,820, 19.80%->$54,820 and≤$65,290,
-19.35%->$65,290
+Summary statistics: 20.05% (≤$45,830), 21.23% (>$45,830 and ≤$48,410), 19.57% (>$48,410 and ≤$54,820), 19.80% (>$54,820 
+and ≤$65,290),19.35% (>$65,29)0
 
 Variable name: no_hs_diploma
 Description: Percentage in county with less than a high school diploma.
@@ -44,8 +44,8 @@ Category values: 1, 2, 3, 4, 5
 Category value labels: 1-≤%13.68, 2->%13.68 and ≤%17.05, 3->%17.05 and ≤%20.73, 4->%20.73 and ≤%30.10,
 5->%30.10
 Missing data value label: .
-Summary statistics: 20.12%-≤%13.68, 20.84%->%13.68 and ≤%17.05, 19.26%->%17.05 and ≤%20.73, 30.72%->%20.73 and ≤%30.10,
-9.05%->%30.10
+Summary statistics: 20.12% (≤%13.68), 20.84% (>%13.68 and ≤%17.05), 19.26% (>%17.05 and ≤%20.73), 30.72% (>%20.73 and ≤%30.10),
+9.05% (>%30.10)
 
 Variable name: death
 Description: SEER cause specific death classification.
@@ -65,7 +65,7 @@ Summary statistics: 54.70%-NH White, 10.48%-NH Black, 0.67%-NH American Indian/A
 
 Variable name: survival_months
 Description: Months between diagnosis and study exit.
-Continuous variable
+Continuous variable from 1 to 191.
 Missing data value label: .
 Summary statistics: 114 months of follow-up time for those alive or dead of non-cancer causes, and 18 months for 
 those with a cancer-related death.
@@ -73,10 +73,10 @@ those with a cancer-related death.
 Variable name: age_diag_ct
 Description: Age at diagnosis categorized into quintiles.
 Category values: 1, 2, 3, 4
-Category value labels: 1- 0 to 4 years old, 2- 5 to 9 years old, 3- 10 to 14 years old, 4- 15 to 19 years old
+Category value labels: 1 (0 to 4 years old), 2 (5 to 9 years old), 3 (10 to 14 years old), 4 (15 to 19 years old)
 Missing data value label: .
-Summary statistics: 31.44%- 0 to 4 years old, 17.21%- 5 to 9 years old, 19.82%- 10 to 14 years old, 
-31.53%- 15 to 19 years old
+Summary statistics: 31.44% (0 to 4 years old), 17.21% (5 to 9 years old), 19.82% (10 to 14 years old), 
+31.53% (15 to 19 years old)
 
 Variable name: insurance
 Description: Health insurance status, only available for years 2007+.
