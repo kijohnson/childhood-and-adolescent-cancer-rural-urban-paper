@@ -276,7 +276,7 @@ else if ICCCsiterecextendedICDO3WHO200 ge 108 and ICCCsiterecextendedICDO3WHO200
 else if ICCCsiterecextendedICDO3WHO200 = 253  then cancer_type = 13; *not classified;
 *metro/non-metro residence (2003);
 metro=.;
-if RuralUrban_Continuum_Code_2003 ge 1 and RuralUrban_Continuum_Code_2003le 3 then metro=1; *metro county;
+if RuralUrban_Continuum_Code_2003 ge 1 and RuralUrban_Continuum_Code_2003 le 3 then metro=1; *metro county;
 else if RuralUrban_Continuum_Code_2003 ge 4 and RuralUrban_Continuum_Code_2003 le 9 then metro=0; *non-metro county;
 *RUCC of residence (2003);
 RUCC=.;
