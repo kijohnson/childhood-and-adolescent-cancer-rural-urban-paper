@@ -8,7 +8,7 @@ survival
 #DATA:    SEER 18 Registries
 #AUTHOR:  Arash Delavar
 #CREATED: December 4th, 2017
-#LATEST:  April 24th, 2018
+#LATEST:  June 10th, 2018
 #NOTES:   This code was written to perform statistical analysis for a study 
 titled "Rural/urban residence and childhood and adolescent cancer survival in 
 the United States"
@@ -17,7 +17,7 @@ the United States"
 ---;
 
 *Import data;
-filename in1 '/folders/myfolders/mylib/2015SEER3.txt';
+filename in1 '/folders/myfolders/mylib/2015SEER4.txt';
 proc format;
   value Sexf
     1 = "Male"
@@ -167,6 +167,19 @@ proc format;
     88 = "Unknown/missing/no match (Alaska or Hawaii - Entire State)"
     99 = "Unknown/missing/no match"
     ;
+   value RuralUrban_Continuum_Code_2013f
+    1 = "Counties in metropolitan areas ge 1 million pop"
+    2 = "Counties in metropolitan areas of 250,000 to 1 million pop"
+    3 = "Counties in metropolitan areas of lt 250 thousand pop"
+    4 = "Urban pop of ge 20,000 adjacent to a metropolitan area"
+    5 = "Urban pop of ge 20,000 not adjacent to a metropolitan area"
+    6 = "Urban pop of 2,500 to 19,999, adjacent to a metro area"
+    7 = "Urban pop of 2,500 to 19,999, not adjacent to a metro area"
+    8 = "Comp rural lt 2,500 urban pop, adjacent to a metro area"
+    9 = "Comp rural lt 2,500 urban pop, not adjacent to metro area"
+    88 = "Unknown/missing/no match (Alaska or Hawaii - Entire State)"
+    99 = "Unknown/missing/no match"
+    ;
       value Year_of_diagnosisf
     173 = "1973"
     174 = "1974"
@@ -228,6 +241,7 @@ data use;
     RaceandoriginrecodeNHWNHBNHAIA
     ICCCsiterecextendedICDO3WHO200
     RuralUrban_Continuum_Code_2003
+    RuralUrban_Continuum_Code_2013
     Medianfamily_incomein_tens_2000
     V_High_school_education_2000
     Insurance_Recode_2007
@@ -242,6 +256,7 @@ data use;
     RaceandoriginrecodeNHWNHBNHAIA = "Race and origin recode (NHW, NHB, NHAIAN"
     ICCCsiterecextendedICDO3WHO200 = "ICCC site rec extended ICD-O-3/WHO 2008"
     RuralUrban_Continuum_Code_2003 = "Rural-Urban Continuum Code 2003"
+    RuralUrban_Continuum_Code_2013 = "Rural-Urban Continuum Code 2013"
     Medianfamily_incomein_tens_2000 = "Median family income (in tens) 2000"
     V_High_school_education_2000 = "% < High school education 2000"
     Insurance_Recode_2007 = "Insurance Recode (2007+)"
@@ -252,6 +267,7 @@ data use;
     RaceandoriginrecodeNHWNHBNHAIA RaceandoriginrecodeNHWNHBNHAIAf.
     ICCCsiterecextendedICDO3WHO200 ICCCsiterecextendedICDO3WHO200f.
     RuralUrban_Continuum_Code_2003 RuralUrban_Continuum_Code_2003f.
+    RuralUrban_Continuum_Code_2013 RuralUrban_Continuum_Code_2013f.
     Year_of_diagnosis Year_of_diagnosisf.
     ;
 run;
@@ -275,20 +291,34 @@ else if ICCCsiterecextendedICDO3WHO200 ge 92  and ICCCsiterecextendedICDO3WHO200
 else if ICCCsiterecextendedICDO3WHO200 ge 108 and ICCCsiterecextendedICDO3WHO200 le 114 then cancer_type = 12; *other;
 else if ICCCsiterecextendedICDO3WHO200 = 253  then cancer_type = 13; *not classified;
 *metro/non-metro residence (2003);
-metro=.;
-if RuralUrban_Continuum_Code_2003 ge 1 and RuralUrban_Continuum_Code_2003 le 3 then metro=1; *metro county;
-else if RuralUrban_Continuum_Code_2003 ge 4 and RuralUrban_Continuum_Code_2003 le 9 then metro=0; *non-metro county;
-*RUCC of residence (2003);
-RUCC=.;
-if RuralUrban_Continuum_Code_2003 = 1 then RUCC =1; *metro ≥1M;
-else if RuralUrban_Continuum_Code_2003 = 2 then RUCC =2; *metro 250k-1M;
-else if RuralUrban_Continuum_Code_2003 = 3 then RUCC =3; *metro <250k;
-else if RuralUrban_Continuum_Code_2003 = 4 then RUCC =4; *non-metro ≥20k adj to metro;
-else if RuralUrban_Continuum_Code_2003 = 5 then RUCC =5; *non-metro ≥20k non-adj to metro;
-else if RuralUrban_Continuum_Code_2003 = 6 then RUCC =6; *non-metro 2,500-19,999 adj to metro;
-else if RuralUrban_Continuum_Code_2003 = 7 then RUCC =7; *non-metro 2,500-19,999 non-adj to metro;
-else if RuralUrban_Continuum_Code_2003 = 8 then RUCC =8; *non-metro < 2,500 adj to metro;
-else if RuralUrban_Continuum_Code_2003 = 9 then RUCC =9; *non-metro < 2,500 non-adj to metro;
+metro03=.;
+if RuralUrban_Continuum_Code_2003 ge 1 and RuralUrban_Continuum_Code_2003 le 3 then metro03=1; *metro03 county;
+else if RuralUrban_Continuum_Code_2003 ge 4 and RuralUrban_Continuum_Code_2003 le 9 then metro03=0; *non-metro03 county;
+*metro/non-metro residence (2013);
+metro13=.;
+if RuralUrban_Continuum_Code_2013 ge 1 and RuralUrban_Continuum_Code_2013 le 3 then metro13=1; *metro13 county;
+else if RuralUrban_Continuum_Code_2013 ge 4 and RuralUrban_Continuum_Code_2013 le 9 then metro13=0; *non-metro13 county;
+*RUCC03 of residence (2003);
+RUCC03=.;
+if RuralUrban_Continuum_Code_2003 = 1 then RUCC03 =1; *metro ≥1M;
+else if RuralUrban_Continuum_Code_2003 = 2 then RUCC03 =2; *metro 250k-1M;
+else if RuralUrban_Continuum_Code_2003 = 3 then RUCC03 =3; *metro <250k;
+else if RuralUrban_Continuum_Code_2003 = 4 then RUCC03 =4; *non-metro ≥20k adj to metro;
+else if RuralUrban_Continuum_Code_2003 = 5 then RUCC03 =5; *non-metro ≥20k non-adj to metro;
+else if RuralUrban_Continuum_Code_2003 = 6 then RUCC03 =6; *non-metro 2,500-19,999 adj to metro;
+else if RuralUrban_Continuum_Code_2003 = 7 then RUCC03 =7; *non-metro 2,500-19,999 non-adj to metro;
+else if RuralUrban_Continuum_Code_2003 = 8 then RUCC03 =8; *non-metro < 2,500 adj to metro;
+else if RuralUrban_Continuum_Code_2003 = 9 then RUCC03 =9; *non-metro < 2,500 non-adj to metro;
+RUCC13=.;
+if RuralUrban_Continuum_Code_2013 = 1 then RUCC13 =1; *metro ≥1M;
+else if RuralUrban_Continuum_Code_2013 = 2 then RUCC13 =2; *metro 250k-1M;
+else if RuralUrban_Continuum_Code_2013 = 3 then RUCC13 =3; *metro <250k;
+else if RuralUrban_Continuum_Code_2013 = 4 then RUCC13 =4; *non-metro ≥20k adj to metro;
+else if RuralUrban_Continuum_Code_2013 = 5 then RUCC13 =5; *non-metro ≥20k non-adj to metro;
+else if RuralUrban_Continuum_Code_2013 = 6 then RUCC13 =6; *non-metro 2,500-19,999 adj to metro;
+else if RuralUrban_Continuum_Code_2013 = 7 then RUCC13 =7; *non-metro 2,500-19,999 non-adj to metro;
+else if RuralUrban_Continuum_Code_2013 = 8 then RUCC13 =8; *non-metro < 2,500 adj to metro;
+else if RuralUrban_Continuum_Code_2013 = 9 then RUCC13 =9; *non-metro < 2,500 non-adj to metro;
 *median family income in county (2000);
 if Medianfamily_incomein_tens_2000 = 16382 then family_income=.; *missing;
 else if Medianfamily_incomein_tens_2000 le 4583 then family_income=1; *≤$45,830;
@@ -335,10 +365,11 @@ run;
 *remove observations with missing values and zero survival time;
 data use2;
 set use1;
-where metro ne .  and race ne . and sex ne . and cancer_type ne . 
+where metro03 ne . and metro13 ne . and race ne . and sex ne . and cancer_type ne . 
 and family_income ne . and no_hs_diploma ne . and age_at_exit ne . 
 and death ne . and age_at_diagnosis ne . and survival_months ne 0;
 run;
+
 
 *Table 1;
 *frequency death;
@@ -375,13 +406,13 @@ run;
 proc freq;
 table cancer_type*death /missing;
 run;
-*frequency RUCC 2003;
+*frequency RUCC03 2003;
 proc freq;
 table RuralUrban_Continuum_Code_2003*death /missing;
 run;
-*frequency metro 2003;
+*frequency metro03 2003;
 proc freq;
-table metro*death /missing;
+table metro03*death /missing;
 run;
 *frequency income;
 proc freq;
@@ -395,28 +426,28 @@ run;
 *Table 2;
 *frequency overall;
 proc freq;
-table metro*death;
+table metro03*death;
 run;
-*frequency RUCC;
+*frequency RUCC03;
 proc freq;
-table RUCC*death;
+table RUCC03*death;
 run;
-*model - Metro/Non-Metro;
+*model - metro03/Non-metro03;
 proc phreg plots=survival;
-class metro(ref='1')  
+class metro03(ref='1')  
 race sex cancer_type family_income no_hs_diploma/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income / rl;
 run;
-*model - RUCC;
+*model - RUCC03;
 proc phreg;
-class RUCC(ref='1')  
+class RUCC03(ref='1')  
 race sex cancer_type family_income no_hs_diploma/desc;
-model survival_months*death(0)= RUCC 
+model survival_months*death(0)= RUCC03 
 race family_income/ rl;
 run;
 
-*Supporting Table 1 - Effect Modification;
+*Table 3 - Effect Modification;
 *frequency age;
 proc freq;
 table age_diag_ct*death;
@@ -435,252 +466,285 @@ table cancer_type*death;
 run;
 *model - ages 0-4;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where age_at_diagnosis le 4;
 run;
 *model - ages 5-9;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where age_at_diagnosis ge 5 and age_at_diagnosis le 9;
 run;
 *model - ages 10-14;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where age_at_diagnosis ge 10 and age_at_diagnosis le 14;
 run;
 *model - ages 15-19;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where age_at_diagnosis ge 15 and age_at_diagnosis le 19;
 run;
 *model - age p for interaction;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income age_diag_ct/desc;
-model survival_months*death(0)= metro age_diag_ct metro*age_diag_ct
+model survival_months*death(0)= metro03 age_diag_ct metro03*age_diag_ct
 race family_income/ rl;
 where age_diag_ct in (1,2,3,4);
 run;
 *model - sex male;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where sex =1;
 run;
 *model - sex female;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where sex =2;
 run;
 *model - sex p for interaction;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income sex/desc;
-model survival_months*death(0)= metro sex metro*sex
+model survival_months*death(0)= metro03 sex metro03*sex
 race family_income/ rl;
 where sex in (1,2);
 run;
 *model - race White;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
  family_income/ rl;
 where race =1;
 run;
 *model - race Black;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
  family_income/ rl;
 where race =2;
 run;
 *model - race American Indian;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
  family_income/ rl;
 where race =3;
 run;
 *model - race Asian;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
  family_income/ rl;
 where race =4;
 run;
 *model - ethnicity Hispanic;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
  family_income/ rl;
 where race =5;
 run;
 *model - race p for interaction;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income /desc;
-model survival_months*death(0)= metro race metro*race
+model survival_months*death(0)= metro03 race metro03*race
  family_income /rl;
 where race in (1,2,3,4,5);
 run;
 *model - cancer type leukemias;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=1;
 run;
 *model - cancer type lymphomas;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where  cancer_type=2;
 run;
 *model - cancer type CNS;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=3;
 run;
 *model - cancer type neuroblastoma;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=4;
 run;
 *model - cancer type retinoblastoma;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=5;
 run;
 *model - cancer type renal;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=6;
 run;
 *model - cancer type hepatic;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=7;
 run;
 *model - cancer type bone;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=8;
 run;
 *model - cancer type soft tissue;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=9;
 run;
 *model - cancer type germ cell;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=10;
 run;
 *model - cancer type epithelial;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income/ rl;
 where cancer_type=11;
 run;
 *model - cancer type p for interaction;
 proc phreg;
-class RUCC(ref='1')  
+class RUCC03(ref='1')  
 race family_income cancer_type/ desc;
-model survival_months*death(0)= RUCC cancer_type RUCC*cancer_type
+model survival_months*death(0)= RUCC03 cancer_type RUCC03*cancer_type
 race family_income/ rl;
 where cancer_type in (1,2,3,4,5,6,7,8,9,10,11,12,13);
 run;
 
-*Supporting Table 2 - with insurance 2007+;
-*frequency - metro;
+*Supporting Information Table 2 - with insurance 2007+;
+*frequency - metro03;
 proc freq;
-table metro*death /missing;
+table metro03*death /missing;
 where Year_of_diagnosis ge 207;
 run;
-*frequency - RUCC;
+*frequency - RUCC03;
 proc freq;
-table RUCC*death /missing;
+table RUCC03*death /missing;
 where Year_of_diagnosis ge 207;
 run;
-*model - Metro/Non-Metro;
+*model - metro03/non-metro03;
 proc phreg;
-class metro(ref='1')  
+class metro03(ref='1')  
 race family_income insurance/desc;
-model survival_months*death(0)= metro 
+model survival_months*death(0)= metro03 
 race family_income insurance/ rl;
 where Year_of_diagnosis ge 207;
 run;
-*model - RUCC;
+*model - RUCC03;
 proc phreg;
-class RUCC(ref='1')  
+class RUCC03(ref='1')  
 race family_income insurance/desc;
-model survival_months*death(0)= RUCC 
+model survival_months*death(0)= RUCC03 
 race family_income insurance/ rl;
 where Year_of_diagnosis ge 207;
+run;
+
+*Supporting Information Table 3 - 2013 RUCC analysis;
+*frequency metro13/non-metro13;
+proc freq;
+table metro13*death;
+run;
+*frequency RUCC13;
+proc freq;
+table RUCC13*death;
+run;
+*model - metro13/non-metro13;
+proc phreg plots=survival;
+class metro13(ref='1')  
+race sex cancer_type family_income no_hs_diploma/desc;
+model survival_months*death(0)= metro13 
+race family_income / rl;
+run;
+*model - RUCC13;
+proc phreg;
+class RUCC13(ref='1')  
+race sex cancer_type family_income no_hs_diploma/desc;
+model survival_months*death(0)= RUCC13 
+race family_income/ rl;
 run;
 
 *Figure 1 - Kaplan Meier Curve;
 proc lifetest;
 time survival_months*death(0);
-strata metro;
+strata metro03;
 run;
 
-*Check proportionality assumptions;
+*Check proportionality assumptions metro03;
 ods graphics on; 
 proc phreg;
-class metro;
-model age_at_exit*death(0)= metro;
+class metro03;
+model age_at_exit*death(0)= metro03;
+assess  ph / resample;
+run;
+ods graphics off; 
+
+*Check proportionality assumptions metro13;
+ods graphics on; 
+proc phreg;
+class metro13;
+model age_at_exit*death(0)= metro13;
 assess  ph / resample;
 run;
 ods graphics off; 
