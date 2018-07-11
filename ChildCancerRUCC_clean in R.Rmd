@@ -1,0 +1,459 @@
+---
+title: "Rural/urban residence and childhood and adolescent cancer survival in the United States"
+author: "Senkei Feng"
+date: "5/12/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import data and recode variables
+```{r}
+rm(list=ls())
+rural<-read.csv('~/Desktop/SEER_data/seer sa 2015.csv', header = T, sep=",",na.strings="")
+library(descr)
+```
+
+## Deaths
+```{r}
+#Deaths from cancer were identified with the “SEER cause-specific death classification” variable
+freq(rural$death_classification, plot = F)
+rural$event[rural$death_classification=="Dead (attributable to this cancer dx)"]<-1
+rural$event[rural$death_classification=="Alive or dead of other cause"]<-0
+table(rural$death_classification, rural$event)
+
+```
+
+## Person-time
+```{r}
+#Person-time was calculated from the “Survival months” variable
+rural$survival_month<-as.numeric(as.character(rural$survival_month))
+summary(rural$survival_month)
+rural$survival_year<-rural$survival_month/12
+summary(rural$survival_year)
+#NA and 0 survival times not excluded yet
+```
+
+## Metro/non-metro
+```{r}
+#metro/non-metro and rural/urban residence 
+freq(rural$rural_urban, plot=F)
+rural$ru_num[rural$rural_urban=="Counties in metropolitan areas ge 1 million pop"]<-1
+rural$ru_num[rural$rural_urban=="Counties in metropolitan areas of 250,000 to 1 million pop"]<-2
+rural$ru_num[rural$rural_urban=="Counties in metropolitan areas of lt 250 thousand pop"]<-3
+rural$ru_num[rural$rural_urban=="Urban pop of ge 20,000 adjacent to a metropolitan area"]<-4
+rural$ru_num[rural$rural_urban=="Urban pop of ge 20,000 not adjacent to a metropolitan area"]<-5
+rural$ru_num[rural$rural_urban=="Urban pop of 2,500 to 19,999, adjacent to a metro area"]<-6
+rural$ru_num[rural$rural_urban=="Urban pop of 2,500 to 19,999, not adjacent to a metro area"]<-7
+rural$ru_num[rural$rural_urban=="Comp rural lt 2,500 urban pop, adjacent to a metro area"]<-8
+rural$ru_num[rural$rural_urban=="Comp rural lt 2,500 urban pop, not adjacent to metro area"]<-9
+table(rural$rural_urban, rural$ru_num)
+
+rural$ru_bin[rural$ru_num<=3]<-"1. metro areas"
+rural$ru_bin[rural$ru_num>=4]<-"2. non-metro areas"
+freq(rural$ru_bin, plot=F)
+
+```
+
+## Cancer types
+```{r}
+#Add numbers to each type
+cancer_typedf<-data.frame(freq(rural$cancer_type, plot=F))
+     rural$cancer_typen0[rural$cancer_type== "I(a.1) Precursor cell leukemias"]<-1
+     rural$cancer_typen0[rural$cancer_type== "I(a.2) Mature B-cell leukemias"]<-2
+     rural$cancer_typen0[rural$cancer_type== "I(a.3) Mature T-cell and NK cell leukemias"]<-3
+     rural$cancer_typen0[rural$cancer_type== "I(a.4) Lymphoid leukemia, NOS"]<-4
+     rural$cancer_typen0[rural$cancer_type== "I(b) Acute myeloid leukemias"]<-5
+     rural$cancer_typen0[rural$cancer_type== "I(c) Chronic myeloproliferative diseases"]<-6
+     rural$cancer_typen0[rural$cancer_type== "I(d) Myelodysplastic syndrome and other myeloproliferative"]<-7
+     rural$cancer_typen0[rural$cancer_type== "I(e) Unspecified and other specified leukemias"]<-8
+     rural$cancer_typen0[rural$cancer_type== "II(a) Hodgkin lymphomas"]<-9
+     rural$cancer_typen0[rural$cancer_type== "II(b.1) Precursor cell lymphomas"]<-10
+     rural$cancer_typen0[rural$cancer_type== "II(b.2) Mature B-cell lymphomas except Burkitt lymphoma"]<-11
+     rural$cancer_typen0[rural$cancer_type== "II(b.3) Mature T-cell and NK-cell lymphomas"]<-12    
+     rural$cancer_typen0[rural$cancer_type== "II(b.4) Non-Hodgkin lymphomas, NOS"]<-13
+     rural$cancer_typen0[rural$cancer_type== "II(c) Burkitt lymphoma"]<-14
+     rural$cancer_typen0[rural$cancer_type== "II(d) Miscellaneous lymphoreticular neoplasms"]<-15
+     rural$cancer_typen0[rural$cancer_type== "II(e) Unspecified lymphomas"]<-16
+     rural$cancer_typen0[rural$cancer_type== "III(a.1) Ependymomas"]<-17
+     rural$cancer_typen0[rural$cancer_type== "III(a.2) Choroid plexus tumor"]<-18
+     rural$cancer_typen0[rural$cancer_type== "III(b) Astrocytomas"]<-19
+     rural$cancer_typen0[rural$cancer_type== "III(c.1) Medulloblastomas"]<-20
+     rural$cancer_typen0[rural$cancer_type== "III(c.2) PNET"]<-21
+     rural$cancer_typen0[rural$cancer_type== "III(c.3) Medulloepithelioma"]<-22
+     rural$cancer_typen0[rural$cancer_type== "III(c.4) Atypical teratoid/rhabdoid tumor"]<-23
+     rural$cancer_typen0[rural$cancer_type== "III(d.1) Oligodendrogliomas"]<-24
+     rural$cancer_typen0[rural$cancer_type== "III(d.2) Mixed and unspecified gliomas"]<-25
+     rural$cancer_typen0[rural$cancer_type== "III(d.3) Neuroepithelial glial tumors of uncertain orig"]<-26
+     rural$cancer_typen0[rural$cancer_type== "III(e.1) Pituitary adenomas and carcinomas"]<-27
+     rural$cancer_typen0[rural$cancer_type== "III(e.2) Tumors of sellar region (craniopharyngiomas)" ]<-28
+     rural$cancer_typen0[rural$cancer_type== "III(e.3) Pineal parenchymal tumors"]<-29
+     rural$cancer_typen0[rural$cancer_type== "III(e.4) Neuronal and mixed neuronal-glial tumors"]<-30
+     rural$cancer_typen0[rural$cancer_type== "III(e.5) Meningiomas"]<-31
+     rural$cancer_typen0[rural$cancer_type== "III(f) Unspecified intracranial and intraspinal neoplasms"]<-32
+     rural$cancer_typen0[rural$cancer_type== "IV(a) Neuroblastoma and ganglioneuroblastoma"]<-33
+     rural$cancer_typen0[rural$cancer_type== "IV(b) Other peripheral nervous cell tumors"]<-34
+     rural$cancer_typen0[rural$cancer_type== "V Retinoblastoma"]<-35
+     rural$cancer_typen0[rural$cancer_type== "VI(a.1) Nephroblastoma"]<-36
+     rural$cancer_typen0[rural$cancer_type== "VI(a.2) Rhabdoid renal tumor"]<-37
+     rural$cancer_typen0[rural$cancer_type== "VI(a.3) Kidney sarcomas"]<-38
+     rural$cancer_typen0[rural$cancer_type== "VI(a.4) pPNET of kidney"]<-39
+     rural$cancer_typen0[rural$cancer_type== "VI(b) Renal carcinomas"]<-40
+     rural$cancer_typen0[rural$cancer_type== "VI(c) Unspecified malignant renal tumors"]<-41
+     rural$cancer_typen0[rural$cancer_type== "VII(a) Hepatoblastoma"]<-42
+     rural$cancer_typen0[rural$cancer_type== "VII(b) Hepatic carcinomas"]<-43
+     rural$cancer_typen0[rural$cancer_type== "VII(c) Unspecified malignant hepatic tumors"]<-44
+     rural$cancer_typen0[rural$cancer_type== "VIII(a) Osteosarcomas"]<-45
+     rural$cancer_typen0[rural$cancer_type== "VIII(b) Chondrosarcomas"]<-46
+     rural$cancer_typen0[rural$cancer_type== "VIII(c.1) Ewing tumor and Askin tumor of bone"]<-47
+     rural$cancer_typen0[rural$cancer_type== "VIII(c.2) pPNET of bone"]<-48
+     rural$cancer_typen0[rural$cancer_type== "VIII(d.1) Malignant fibrous neoplasms of bone"]<-49
+     rural$cancer_typen0[rural$cancer_type== "VIII(d.2) Malignant chordomas"]<-50
+     rural$cancer_typen0[rural$cancer_type== "VIII(d.3) Odontogenic malignant tumors"]<-51
+     rural$cancer_typen0[rural$cancer_type== "VIII(d.4) Miscellaneous malignant bone tumors"]<-52
+     rural$cancer_typen0[rural$cancer_type== "VIII(e) Unspecified malignant bone tumors"]<-53
+     rural$cancer_typen0[rural$cancer_type== "IX(a) Rhabdomyosarcomas"]<-54
+     rural$cancer_typen0[rural$cancer_type== "IX(b.1) Fibroblastic and myofibroblastic tumors"]<-55
+     rural$cancer_typen0[rural$cancer_type== "IX(b.2) Nerve sheath tumors"]<-56
+     rural$cancer_typen0[rural$cancer_type== "IX(b.3) Other fibromatous neoplasms"]<-57
+     rural$cancer_typen0[rural$cancer_type== "IX(c) Kaposi sarcoma"]<-58
+     rural$cancer_typen0[rural$cancer_type== "IX(d.1) Ewing tumor and Askin tumor of soft tissue"]<-59
+     rural$cancer_typen0[rural$cancer_type== "IX(d.2) pPNET of soft tissue"]<-60
+     rural$cancer_typen0[rural$cancer_type== "IX(d.3) Extrarenal rhabdoid tumor"]<-61
+     rural$cancer_typen0[rural$cancer_type== "IX(d.4) Liposarcomas"]<-62
+     rural$cancer_typen0[rural$cancer_type== "IX(d.5) Fibrohistiocytic tumors"]<-63
+     rural$cancer_typen0[rural$cancer_type== "IX(d.6) Leiomyosarcomas"]<-64
+     rural$cancer_typen0[rural$cancer_type== "IX(d.7) Synovial sarcomas"]<-65
+     rural$cancer_typen0[rural$cancer_type== "IX(d.8) Blood vessel tumors"]<-66
+     rural$cancer_typen0[rural$cancer_type== "IX(d.9) Osseous & chondromatous neoplasms of soft tissue"]<-67
+     rural$cancer_typen0[rural$cancer_type== "IX(d.10) Alveolar soft parts sarcoma"]<-68
+     rural$cancer_typen0[rural$cancer_type== "IX(d.11) Miscellaneous soft tissue sarcomas"]<-69
+     rural$cancer_typen0[rural$cancer_type== "IX(e) Unspecified soft tissue sarcomas"]<-70
+     rural$cancer_typen0[rural$cancer_type== "X(a.1) Intracranial & intraspinal germinomas"]<-71
+     rural$cancer_typen0[rural$cancer_type== "X(a.2) Intracranial & intraspinal teratomas"]<-72
+     rural$cancer_typen0[rural$cancer_type== "X(a.3) Intracranial & intraspinal embryonal carcinomas"]<-73
+     rural$cancer_typen0[rural$cancer_type== "X(a.4) Intracranial & intraspinal yolk sac tumor"]<-74
+     rural$cancer_typen0[rural$cancer_type== "X(a.5) Intracranial & intraspinal choriocarcinoma"]<-75
+     rural$cancer_typen0[rural$cancer_type== "X(a.6) Intracranial & intraspinal tumors of mixed forms"]<-76
+     rural$cancer_typen0[rural$cancer_type== "X(b.1) Germinomas: extracranial/extragonadal"]<-77
+     rural$cancer_typen0[rural$cancer_type== "X(b.2) Malignant teratomas: extracranial/extragonadal"]<-78
+     rural$cancer_typen0[rural$cancer_type== "X(b.3) Embryonal carcinomas: extracranial/extragonadal"]<-79
+     rural$cancer_typen0[rural$cancer_type== "X(b.4) Yolk sac tumor: extracranial/extragonadal"]<-80
+     rural$cancer_typen0[rural$cancer_type== "X(b.5) Choriocarcinomas: extracranial/extragonadal"]<-81
+     rural$cancer_typen0[rural$cancer_type== "X(b.6) Other mixed germ cell: extracranial/extragonadal"]<-82
+     rural$cancer_typen0[rural$cancer_type== "X(c.1) Malignant gonadal germinomas"]<-83
+     rural$cancer_typen0[rural$cancer_type== "X(c.2) Malignant gonadal teratomas"]<-84
+     rural$cancer_typen0[rural$cancer_type== "X(c.3) Gonadal embryonal carcinomas"]<-85
+     rural$cancer_typen0[rural$cancer_type== "X(c.4) Gonadal yolk sac tumor"]<-86
+     rural$cancer_typen0[rural$cancer_type== "X(c.5) Gonadal choriocarcinoma"]<-87
+     rural$cancer_typen0[rural$cancer_type== "X(c.6) Malignant gonadal tumors of mixed forms"]<-88
+     rural$cancer_typen0[rural$cancer_type== "X(c.7) Malignant gonadal gonadoblastoma"]<-89
+     rural$cancer_typen0[rural$cancer_type== "X(d) Gonadal carcinomas"]<-90
+     rural$cancer_typen0[rural$cancer_type== "X(e) Other and unspecified malignant gonadal tumors"]<-91
+     rural$cancer_typen0[rural$cancer_type== "XI(a) Adrenocortical carcinomas"]<-92
+     rural$cancer_typen0[rural$cancer_type== "XI(b) Thyroid carcinomas"]<-93
+     rural$cancer_typen0[rural$cancer_type== "XI(c) Nasopharyngeal carcinomas"]<-94
+     rural$cancer_typen0[rural$cancer_type== "XI(d) Malignant melanomas"]<-95
+     rural$cancer_typen0[rural$cancer_type== "XI(e) Skin carcinomas"]<-96
+     rural$cancer_typen0[rural$cancer_type== "XI(f.1) Carcinomas of salivary glands"]<-97
+     rural$cancer_typen0[rural$cancer_type== "XI(f.2) Carcinomas of colon and rectum"]<-98
+     rural$cancer_typen0[rural$cancer_type== "XI(f.3) Carcinomas of appendix"]<-99
+     rural$cancer_typen0[rural$cancer_type== "XI(f.4) Carcinomas of lung"]<-100
+     rural$cancer_typen0[rural$cancer_type== "XI(f.5) Carcinomas of thymus"]<-101
+     rural$cancer_typen0[rural$cancer_type== "XI(f.6) Carcinomas of breast"]<-102
+     rural$cancer_typen0[rural$cancer_type== "XI(f.7) Carcinomas of cervix uteri"]<-103
+     rural$cancer_typen0[rural$cancer_type== "XI(f.8) Carcinomas of bladder"]<-104
+     rural$cancer_typen0[rural$cancer_type== "XI(f.9) Carcinomas of eye"]<-105
+     rural$cancer_typen0[rural$cancer_type== "XI(f.10) Carcinomas of other specified sites"]<-106
+     rural$cancer_typen0[rural$cancer_type== "XI(f.11) Carcinomas of unspecified site"]<-107
+     rural$cancer_typen0[rural$cancer_type== "XII(a.1) Gastrointestinal stromal tumor"]<-108
+     rural$cancer_typen0[rural$cancer_type== "XII(a.2) Pancreatoblastoma"]<-109
+     rural$cancer_typen0[rural$cancer_type== "XII(a.3) Pulmonary blastoma and pleuropulmonary blastoma"]<-110
+     rural$cancer_typen0[rural$cancer_type== "XII(a.4) Other complex mixed and stromal neoplasms"]<-111
+     rural$cancer_typen0[rural$cancer_type== "XII(a.5) Mesothelioma"]<-112
+     rural$cancer_typen0[rural$cancer_type== "XII(a.6) Other specified malignant tumors"]<-113
+     rural$cancer_typen0[rural$cancer_type== "XII(b) Other unspecified malignant tumors"]<-114
+     rural$cancer_typen0[rural$cancer_type== "Not classified by ICCC or in situ"]<-253
+summary(rural$cancer_typen0)
+```
+
+```{r}
+#Recode
+rural$cancer_typec[rural$cancer_typen0>=1&rural$cancer_typen0<=8]<-"01. Leukemias"
+rural$cancer_typec[rural$cancer_typen0>=9&rural$cancer_typen0<=16]<-"02. Lymphomas"
+rural$cancer_typec[rural$cancer_typen0>=17&rural$cancer_typen0<=32]<-"03. CNS"
+rural$cancer_typec[rural$cancer_typen0>=33&rural$cancer_typen0<=34]<-"04. Neuroblastoma"
+rural$cancer_typec[rural$cancer_typen0==35]<-"05. retinoblastoma"
+rural$cancer_typec[rural$cancer_typen0>=36&rural$cancer_typen0<=41]<-"06. Renal"
+rural$cancer_typec[rural$cancer_typen0>=42&rural$cancer_typen0<=44]<-"07. Hepatic"
+rural$cancer_typec[rural$cancer_typen0>=45&rural$cancer_typen0<=53]<-"08. Bone"
+rural$cancer_typec[rural$cancer_typen0>=54&rural$cancer_typen0<=70]<-"09. Extraosseous sarcoma"
+rural$cancer_typec[rural$cancer_typen0>=71&rural$cancer_typen0<=91]<-"10. Reproductive"
+rural$cancer_typec[rural$cancer_typen0>=92&rural$cancer_typen0<=107]<-"11. Epithelial"
+rural$cancer_typec[rural$cancer_typen0>=108&rural$cancer_typen0<=114]<-"12. Other"
+rural$cancer_typec[rural$cancer_typen0>=253]<-"13. Not classified"
+freq(rural$cancer_typec, plot=F)
+
+rural$cancer_typen<-as.numeric(substr(rural$cancer_typec,1,2))
+summary(rural$cancer_typen)
+```
+
+
+## Race and gender
+```{r}
+rural$race1[rural$race=="Non-Hispanic White"]<-"1. Non-Hispanic White"
+rural$race1[rural$race=="Non-Hispanic Black"]<-"2. Non-Hispanic Black"
+rural$race1[rural$race=="Non-Hispanic American Indian/Alaska Native"]<-"3. Non-Hispanic AIAN"
+rural$race1[rural$race=="Non-Hispanic Asian or Pacific Islander"]<-"4. Non-Hispanic API"
+rural$race1[rural$race=="Hispanic (All Races)"]<-"5. Hispanic (All Races)"
+table(rural$race, rural$race1)
+freq(rural$race1, plot=F)
+
+rural$sex<-gsub("Male", "1. Male", rural$sex)
+rural$sex<-gsub("Female", "2. Female", rural$sex)
+freq(rural$sex, plot = F)
+```
+
+## Income, high school education and insurance
+```{r}
+# Income
+rural$income<-as.numeric(as.character(rural$income))
+summary(rural$income)
+#calculate quantiles
+quantile(rural$income, probs = seq(0, 1, .2), na.rm = T)
+rural$incomec[rural$income<=4583]<-1
+rural$incomec[rural$income>4583&rural$income<=4841]<-2
+rural$incomec[rural$income>4841&rural$income<=5482]<-3
+rural$incomec[rural$income>5482&rural$income<=6529]<-4
+rural$incomec[rural$income>6529]<-5
+freq(rural$incomec, plot = F)
+
+#High School education
+rural$high_school<-as.numeric(as.character(rural$high_school))
+summary(rural$high_school)
+#calculate quantiles
+quantile(rural$high_school, probs = seq(0, 1, .2), na.rm = T)
+rural$high_schoolc[rural$high_school<=1368]<-1
+rural$high_schoolc[rural$high_school>1368&rural$high_school<=1705]<-2
+rural$high_schoolc[rural$high_school>1705&rural$high_school<=2073]<-3
+rural$high_schoolc[rural$high_school>2073&rural$high_school<=3010]<-4
+rural$high_schoolc[rural$high_school>3010]<-5
+freq(rural$high_schoolc, plot=F)
+
+#Insurance
+freq(rural$insurance, plot=F)
+rural$insurancec[rural$insurance=="Uninsured"]<-"1. Uninsured"
+rural$insurancec[rural$insurance=="Any Medicaid"]<-"2. Medicaid"
+rural$insurancec[rural$insurance=="Insured"]<-"3. Insured"
+rural$insurancec[rural$insurance=="Insured/No specifics"]<-"3. Insured"
+rural$insurancec[rural$insurance=="Blank(s)"]<-"4. Unknown"
+rural$insurancec[rural$insurance=="Insurance status unknown"]<-"4. Unknown"
+freq(rural$insurancec, plot=F)
+```
+
+## Age group
+```{r}
+summary(rural$diagnosis_age)
+rural$agec[rural$diagnosis_age<=4]<-"1. 0-4 years"
+rural$agec[rural$diagnosis_age>=5&rural$diagnosis_age<=9]<-"2. 5-9 years"
+rural$agec[rural$diagnosis_age>=10&rural$diagnosis_age<=14]<-"3. 10-14 years"
+rural$agec[rural$diagnosis_age>=15&rural$diagnosis_age<=19]<-"4. 15-19 years"
+table(rural$diagnosis_age, rural$agec)
+```
+
+
+```{r}
+#Keep complete cases
+rural<-rural[complete.cases(rural), ]
+#43,030 cases
+#we used Cox proportional hazards regression models to compute hazard ratios (HRs) and 95% confidence intervals (CIs) with survival months as the timescale
+#Observations with missing values and zero survival time were excluded from the analysis 
+rural<-subset(rural, survival_month!=0)
+summary(rural$survival_year)
+#41,879 cases 
+
+```
+
+# Tables and Figures
+## Table 1
+```{r}
+table(rural$event)
+attach(rural)
+tab1<-data.frame(event, sex, race1, cancer_typec, ru_num, ru_bin, incomec, high_schoolc)
+library(foreach)
+foreach(i=tab1) %do%
+  table(i, tab1$event)
+```
+
+
+## Table 2 Cox regression
+
+```{r}
+#frequency overall
+table(rural$ru_bin, rural$event)
+#frequency bu rucc
+table(rural$ru_num, rural$event)
+
+#Model: metro/ non-metro
+library(survival)
+res.cox1 <- coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+res.cox1
+#HR & CI
+m1HRCI<-data.frame(exp(confint(res.cox1)))
+m1HRCI$hazardR<-exp(res.cox1$coefficients)
+m1HRCI
+
+#Model: RUCC
+res.cox2 <- coxph(Surv(survival_month, event == 1) ~ as.factor(ru_num)+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+res.cox2
+#HR & CI
+m2HRCI<-data.frame(exp(confint(res.cox2)))
+m2HRCI$hazardR<-exp(res.cox2$coefficients)
+m2HRCI
+
+```
+
+## Figure Kaplan-Meier
+```{r, figure=T}
+#Kaplan-Meier curves were used to illustrate survival probabilities over time by metro/non-metro residence
+summary(rural$survival_month)
+rural$SurvObj <- with(rural, Surv(survival_month, event == 1))
+rural_rucc <- survfit(SurvObj ~ ru_num, data = rural, conf.type = "log-log")
+
+#By rural/urban
+rural_ur <- survfit(SurvObj ~ ru_bin, data = rural, conf.type = "log-log")
+plot(rural_ur, pch= 18, lty = c(1,2),col=c("gray", "black"), 
+     xlab="Survival Months", ylab="Survival Probability",
+     ylim=c(.5, 1), yaxt = "n")
+axis(2, at=seq(0.5,1,.1),labels=seq(50,100,10))
+layout(rbind(1,2), heights=c(17,1))  # put legend on bottom 1/8th of the chart
+legend('center','groups', legend=c("Metro areas", "Non-metro areas"),
+       col=c("gray", "black"), lty=c(1,2), cex=0.8, ncol = 2, bty = "n")
+
+#By RUCC
+plot(rural_rucc, pch= 18, lty = c(1:9),col=c("black","gray","black","gray","black","gray","black","gray","black"),
+     xlab="Survival Months", ylab="Survival Probability",
+     ylim=c(.5, 1), yaxt="n")
+axis(2, at=seq(0.5,1,.1),labels=seq(50,100,10))
+legend(10, 0.8,legend=c("Counties in metropolitan areas ge 1 million pop", 
+                           "Counties in metropolitan areas of 250,000 to 1 million pop",
+                           "Counties in metropolitan areas of lt 250 thousand pop",
+                           "Urban pop of ge 20,000 adjacent to a metropolitan area",
+                           "Urban pop of ge 20,000 not adjacent to a metropolitan area",
+                           "Urban pop of 2,500 to 19,999, adjacent to a metro area",
+                           "Urban pop of 2,500 to 19,999, not adjacent to a metro area",
+                           "Comp rural lt 2,500 urban pop, adjacent to a metro area",
+                           "Comp rural lt 2,500 urban pop, not adjacent to metro area"),
+       col=c("black","gray","black","gray","black","gray","black","gray","black"), lty=c(1:9), cex=0.8, ncol = 1, bty = "n")
+
+
+```
+
+## Supporting Table 1 Effect modification
+```{r}
+#Frequencies
+table(rural$event)
+attach(rural)
+tab1s<-data.frame(event, agec, sex, race1, cancer_typec)
+library(foreach)
+foreach(i=tab1s) %do%
+  table(i, tab1s$event)
+
+```
+
+```{r}
+#Models
+library(survival)
+
+##By age groups
+attach(rural)
+#See the default order of i
+foreach(i = unique(agec)) %do%
+  print(i)
+
+#Hazard ratio
+foreach(i = unique(agec)) %do%
+  exp(coef((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, agec== i), ties = "breslow"))))
+
+#95% CI
+foreach(i = unique(agec)) %do%
+  exp(confint((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, agec== i), ties = "breslow"))))
+
+#Interaction
+rural$agec_num<-as.numeric(substr(rural$agec, 1, 1))
+summary(rural$agec_num)
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ agec_num+ ru_bin*agec_num+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ agec+ ru_bin*agec+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+```
+
+```{r}
+## By gender
+attach(rural)
+#See the default order of i
+foreach(i = unique(sex)) %do%
+  print(i)
+
+#Hazard ratio
+foreach(i = unique(sex)) %do%
+  exp(coef((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, sex== i), ties = "breslow"))))
+
+#95% CI
+foreach(i = unique(sex)) %do%
+  exp(confint((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, sex== i), ties = "breslow"))))
+
+#Interaction
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ sex+ ru_bin*sex+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+
+```
+
+```{r}
+## By race
+attach(rural)
+#See the default order of i
+foreach(i = unique(race1)) %do%
+  print(i)
+
+#Hazard ratio
+foreach(i = unique(race1)) %do%
+  exp(coef((coxph(Surv(survival_month, event == 1) ~ ru_bin+ as.factor(incomec), data = subset(rural, race1== i), ties = "breslow"))))
+#95% CI
+foreach(i = unique(race1)) %do%
+  exp(confint((coxph(Surv(survival_month, event == 1) ~ ru_bin+ as.factor(incomec), data = subset(rural, race1== i), ties = "breslow"))))
+
+#Interaction
+rural$race_num<-as.numeric(substr(rural$race1, 1, 1))
+summary(rural$race_num)
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ race_num+ ru_bin*race_num+ as.factor(incomec), data = rural, ties = "breslow")
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ ru_bin*race1+ as.factor(incomec), data = rural, ties = "breslow")
+
+```
+
+```{r}
+## By cancer type
+attach(rural)
+#See the default order of i
+foreach(i = unique(cancer_typec)) %do%
+  print(i)
+
+#Hazard ratio
+foreach(i = unique(cancer_typec)) %do%
+  exp(coef((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, cancer_typec== i), ties = "breslow"))))
+#95% CI
+foreach(i = unique(cancer_typec)) %do%
+  exp(confint((coxph(Surv(survival_month, event == 1) ~ ru_bin+ race1+ as.factor(incomec), data = subset(rural, cancer_typec== i), ties = "breslow"))))
+
+#Interaction
+summary(rural$cancer_typen)
+coxph(Surv(survival_month, event == 1) ~ ru_bin+ cancer_typen+ ru_bin*cancer_typen+ race1+ as.factor(incomec), data = rural, ties = "breslow")
+
+```
+
+# Check proportionality assumptions
+```{r}
+fit <- coxph(Surv(survival_month, event) ~ ru_bin, rural)
+temp<- cox.zph(fit)
+print(temp)                  #display the results
+plot(temp)                   #plot curves
+```
